@@ -1,0 +1,9 @@
+# Requirements for RAG Ingestion Engine (Python 3.13)
+pdfplumber==0.11.4
+# Install directly from GitHub to get the latest fixes for Python 3.13+
+openai-whisper @ git+https://github.com/openai/whisper.git
+setuptools  # Required for some Whisper dependencies
+langchain-text-splitters
+sentence-transformers
+qdrant-client
+ollama
