@@ -1,6 +1,7 @@
 import pathlib
 from ingestion import process_file
 from processing import process_and_store, search_knowledge, ask_llm
+from logger_config import chat_logger 
 
 def main():
     source_dir = pathlib.Path("sources")
@@ -26,6 +27,15 @@ def main():
             
             # 2. Get the AI to summarize them
             answer = ask_llm(user_query, context)
+
+            chat_logger.info(
+                f"Interaction for query: {user_query[:30]}...", 
+                extra={"details": {
+                    "question": user_query,
+                    "answer": answer,
+                    "context_used": context # Optional: save the sources used
+                }}
+            )
             
             print(f"\nAI ANSWER:\n{answer}")
 
