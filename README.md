@@ -174,8 +174,8 @@ Edit `processing.py` lines 21-26:
 
 ```python
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=512,      # Current default (larger = more context)
-    chunk_overlap=80,   # Overlap for continuity
+    chunk_size=1200,      # Current default (larger = more context)
+    chunk_overlap=100,   # Overlap for continuity
     length_function=len,
     separators=["\n\n", "\n", ".", " ", ""]  # Smart split points
 )
