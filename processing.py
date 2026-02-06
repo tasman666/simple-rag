@@ -19,9 +19,10 @@ def process_and_store(knowledge_base):
 
     # Setup the Chunker
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=50,
+        chunk_size=1200,
+        chunk_overlap=100,
         length_function=len,
+        separators=["\n\n", "\n", ".", " ", ""]
     )
 
     all_points = []
@@ -49,7 +50,7 @@ def process_and_store(knowledge_base):
     print(f"Indexed {len(all_points)} chunks into Qdrant!")
     return client
 
-def search_knowledge(query, limit=3):
+def search_knowledge(query, limit=10):
     """Finds the most relevant chunks in Qdrant."""
     # 1. Turn the question into a vector
     query_vector = model.encode(query).tolist()

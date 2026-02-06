@@ -8,6 +8,7 @@ A local **Retrieval-Augmented Generation (RAG)** chatbot that processes PDF docu
 - **🎙️ Audio Transcription** — Convert MP3, WAV, and M4A files to text using OpenAI Whisper
 - **🧠 Vector Search** — Semantic search using sentence-transformers and Qdrant
 - **💬 Local AI** — Get answers from a locally-running LLM via Ollama (no data leaves your machine)
+- **📝 Chat Logging** — All conversations saved to JSONL for review and analysis
 - **🔒 Privacy-First** — All processing happens locally, your documents stay private
 
 ## 📋 Requirements
@@ -65,14 +66,16 @@ choco install ffmpeg
 
 ```
 simple-rag/
-├── main.py            # Main application entry point
-├── ingestion.py       # File processing (PDF & audio extraction)
-├── processing.py      # Chunking, embedding, vector search & LLM calls
-├── requirements.txt   # Python dependencies
-├── sources/           # Place your documents here
+├── main.py              # Main application entry point
+├── ingestion.py         # File processing (PDF & audio extraction)
+├── processing.py        # Chunking, embedding, vector search & LLM calls
+├── logger_config.py     # Chat logging configuration (JSONL output)
+├── requirements.txt     # Python dependencies
+├── chat_history.jsonl   # Conversation log (auto-generated)
+├── sources/             # Place your documents here
 │   ├── example.pdf
 │   └── example.mp3
-└── venv/              # Virtual environment
+└── venv/                # Virtual environment
 ```
 
 ## 📦 Dependencies
@@ -129,7 +132,7 @@ Type `exit` to quit the application.
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
 │   Sources    │────▶│  Ingestion   │────▶│   Chunking   │
-│ (PDF/Audio)  │     │ (Text/STT)   │     │  (500 chars) │
+│ (PDF/Audio)  │     │ (Text/STT)   │     │  (800 chars) │
 └──────────────┘     └──────────────┘     └──────────────┘
                                                   │
                                                   ▼
@@ -145,11 +148,12 @@ Type `exit` to quit the application.
 ```
 
 1. **Ingestion** — Documents are loaded and text is extracted (PDFs) or transcribed (audio)
-2. **Chunking** — Text is split into 500-character chunks with 50-character overlap
+2. **Chunking** — Text is split into 800-character chunks with 100-character overlap using smart separators
 3. **Embedding** — Chunks are converted to vectors using `all-MiniLM-L6-v2`
 4. **Storage** — Vectors are stored in an in-memory Qdrant database
 5. **Query** — User questions are embedded and matched against stored chunks
 6. **Generation** — Relevant chunks are sent to Ollama for answer synthesis
+7. **Logging** — Each Q&A interaction is logged to `chat_history.jsonl`
 
 ## 🔧 Configuration
 
@@ -166,13 +170,14 @@ response = ollama.chat(
 
 ### Adjust Chunk Size
 
-Edit `processing.py` lines 21-25:
+Edit `processing.py` lines 21-26:
 
 ```python
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,    # Larger chunks = more context
-    chunk_overlap=100,  # More overlap = better continuity
+    chunk_size=1200,      # Current default (larger = more context)
+    chunk_overlap=100,   # Overlap for continuity
     length_function=len,
+    separators=["\n\n", "\n", ".", " ", ""]  # Smart split points
 )
 ```
 
@@ -183,6 +188,16 @@ By default, the vector database is in-memory. To persist it, edit `processing.py
 ```python
 client = QdrantClient("./qdrant_db")  # Saves to disk
 ```
+
+### Chat History
+
+All conversations are automatically logged to `chat_history.jsonl` in JSON Lines format:
+
+```json
+{"timestamp": "2026-02-06T16:45:00", "level": "INFO", "question": "...", "answer": "...", "context_used": [...]}
+```
+
+This file is excluded from git by default.
 
 ## 📝 License
 
